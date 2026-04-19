@@ -3,7 +3,7 @@ import requests
 import os
 from PIL import Image
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE = os.getenv("API_BASE_URL", "https://prescription-reader-2.onrender.com")
 
 st.set_page_config(
     page_title="Prescription Reader",
