@@ -2,11 +2,12 @@ services:
   - type: web
     name: prescription-reader-api
     env: python
-    region: oregon          # change to: oregon | frankfurt | singapore | ohio
-    plan: free              # free | starter | standard
+    region: oregon
+    plan: free
+    pythonVersion: "3.11.9"
 
-    # Install system dependency (poppler for PDF support)
     buildCommand: |
+      pip install --upgrade pip &&
       apt-get install -y poppler-utils &&
       pip install -r requirements.txt
 
@@ -15,11 +16,7 @@ services:
     healthCheckPath: /health
 
     envVars:
-      - key: OPENAI_API_KEY
-        sync: false         # ← Set manually in Render dashboard (never commit this)
-
+      - key: GROQ_API_KEY
+        sync: false
       - key: PYTHONUNBUFFERED
         value: "1"
-
-      - key: PORT
-        value: "8000"
