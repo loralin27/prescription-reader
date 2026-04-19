@@ -1,14 +1,13 @@
 services:
   - type: web
-    name: prescription-reader-api
+    name: prescription-reader-2
     env: python
     region: oregon
     plan: free
     pythonVersion: "3.11.9"
 
     buildCommand: |
-      pip install --upgrade pip &&
-      apt-get install -y poppler-utils &&
+      apt-get install -y tesseract-ocr poppler-utils &&
       pip install -r requirements.txt
 
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
