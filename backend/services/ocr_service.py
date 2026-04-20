@@ -1,7 +1,9 @@
 import os
-import tempfile
 import pytesseract
 from PIL import Image
+
+# Set Tesseract path for Linux (Render)
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 def extract_text_from_image(image_path: str) -> str:
     ext = os.path.splitext(image_path)[-1].lower()
