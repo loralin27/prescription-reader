@@ -8,7 +8,7 @@ An AI-powered web app that reads doctor's prescription images and extracts struc
 
 | Service | URL |
 |---|---|
-| Frontend |[(https://prescription-reader-f2.streamlit.app/)](https://prescription-reader-f2.streamlit.app/) |
+| Frontend |[https://prescription-reader-f2.streamlit.app/](https://prescription-reader-f2.streamlit.app/) |
 | Backend API | https://prescription-reader-x714.onrender.com/ |
 | API Docs | https://prescription-reader-x714.onrender.com/docs |
 
@@ -230,4 +230,4 @@ This tool is for educational and portfolio purposes only. AI-generated output ma
 
 ## 👨‍💻 Author
 
-Built by [Your Name](https://github.com/yourusername)
+Built by [Loralin Sahoo](https://github.com/loralin27)
