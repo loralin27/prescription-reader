@@ -3,7 +3,11 @@ import requests
 import os
 from PIL import Image
 
-API_BASE = os.getenv("API_BASE_URL", "https://prescription-reader-2.onrender.com")
+# Debug: show what URL is being used
+try:
+    API_BASE = st.secrets["API_BASE_URL"]
+except:
+    API_BASE = os.getenv("API_BASE_URL", "https://prescription-reader-x714.onrender.com")
 
 st.set_page_config(
     page_title="Prescription Reader",
@@ -23,13 +27,11 @@ def render_medicine_card(med, index):
         notes = ""
 
     with st.container(border=True):
-        # Medicine name + form badge
         if form:
             st.markdown(f"### {name} &nbsp; `{form}`")
         else:
             st.markdown(f"### {name}")
 
-        # Dosage / Frequency / Duration in 3 columns
         c1, c2, c3 = st.columns(3)
         with c1:
             st.metric(label="Dosage", value=dosage)
@@ -42,12 +44,16 @@ def render_medicine_card(med, index):
             st.caption(f"📝 {notes}")
 
 
-# ── Header ────────────────────────────────────────────────────────────────────
+# ── Header ──────────────────────────────────────────────────────────────────
 st.title("💊 Prescription Reader")
 st.caption("Upload a doctor's prescription — get a clean, structured medicine list instantly.")
+
+# DEBUG — remove after fixing
+st.info(f"🔗 Connected to: `{API_BASE}`")
+
 st.divider()
 
-# ── Layout ────────────────────────────────────────────────────────────────────
+# ── Layout ──────────────────────────────────────────────────────────────────
 col_upload, col_result = st.columns([1, 1.4], gap="large")
 
 with col_upload:
@@ -67,7 +73,7 @@ with col_upload:
     st.markdown("")
     extract_btn = st.button("🔍 Extract Medicines", use_container_width=True, disabled=not uploaded_file)
 
-# ── Results ───────────────────────────────────────────────────────────────────
+# ── Results ─────────────────────────────────────────────────────────────────
 with col_result:
     st.subheader("🧾 Extracted Information")
 
@@ -76,16 +82,27 @@ with col_result:
             try:
                 uploaded_file.seek(0)
                 files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
-                response = requests.post(f"{API_BASE}/api/extract-medicines", files=files, timeout=120)
+                response = requests.post(
+                    f"{API_BASE}/api/extract-medicines",
+                    files=files,
+                    timeout=120
+                )
+
+                st.write(f"Status code: {response.status_code}")
+                st.write(f"Raw response: {response.text[:500]}")
 
                 if response.status_code == 200:
-                    data = response.json()
+                    try:
+                        data = response.json()
+                    except Exception:
+                        st.error("Server returned empty/invalid response.")
+                        st.stop()
+
                     medicines = data.get("medicines", [])
                     raw_text  = data.get("raw_ocr_text", "")
 
                     if medicines:
                         st.success(f"✅ Found **{len(medicines)}** medicine(s)")
-
                         for i, med in enumerate(medicines):
                             render_medicine_card(med, i)
 
@@ -97,18 +114,21 @@ with col_result:
                         st.warning("No medicines could be extracted. Please try a clearer image.")
 
                 else:
-                    st.error(f"API Error {response.status_code}: {response.json().get('detail', 'Unknown error')}")
+                    try:
+                        detail = response.json().get("detail", "Unknown error")
+                    except Exception:
+                        detail = response.text or "Empty response"
+                    st.error(f"API Error {response.status_code}: {detail}")
 
-            except requests.exceptions.ConnectionError:
-                st.error(f"❌ Cannot connect to API at `{API_BASE}`. Make sure the backend is running.")
+            except requests.exceptions.ConnectionError as e:
+                st.error(f"❌ Connection error: {str(e)}")
             except requests.exceptions.Timeout:
-                st.error("⏳ Request timed out. Please try again.")
+                st.error("⏳ Timed out. Try again.")
             except Exception as e:
                 st.error(f"Unexpected error: {str(e)}")
 
     elif not uploaded_file:
         st.info("⬅️ Upload a prescription image to get started.")
 
-# ── Footer ────────────────────────────────────────────────────────────────────
 st.divider()
-st.caption("Built with FastAPI · EasyOCR · Groq Llama 3.3 · Streamlit")
+st.caption("Built with FastAPI · Tesseract · Groq Llama 3.3 · Streamlit")
