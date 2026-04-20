@@ -1,40 +1,25 @@
 import os
-import tempfile
-from PIL import Image
+import base64
+from pathlib import Path
 
 def extract_text_from_image(image_path: str) -> str:
+    """
+    Instead of local OCR, encode image to base64.
+    The LLM service will handle vision directly.
+    """
     ext = os.path.splitext(image_path)[-1].lower()
     if ext == ".pdf":
         return _extract_from_pdf(image_path)
     else:
-        return _extract_from_image(image_path)
-
-def _extract_from_image(image_path: str) -> str:
-    from doctr.io import DocumentFile
-    from doctr.models import ocr_predictor
-    model = ocr_predictor(pretrained=True)
-    doc = DocumentFile.from_images(image_path)
-    result = model(doc)
-    text = "\n".join(
-        word.value
-        for page in result.pages
-        for block in page.blocks
-        for line in block.lines
-        for word in line.words
-    )
-    return text.strip()
+        with open(image_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode("utf-8")
+        return f"IMAGE_BASE64:{ext}:{data}"
 
 def _extract_from_pdf(pdf_path: str) -> str:
-    from doctr.io import DocumentFile
-    from doctr.models import ocr_predictor
-    model = ocr_predictor(pretrained=True)
-    doc = DocumentFile.from_pdf(pdf_path)
-    result = model(doc)
-    text = "\n".join(
-        word.value
-        for page in result.pages
-        for block in page.blocks
-        for line in block.lines
-        for word in line.words
-    )
-    return text.strip()
+    from pdf2image import convert_from_path
+    import tempfile
+    pages = convert_from_path(pdf_path, dpi=200)
+    # Use first page only for now
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+        pages[0].save(tmp.name, "PNG")
+        return extract_text_from_image(tmp.name)
