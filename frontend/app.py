@@ -3,7 +3,6 @@ import requests
 import os
 from PIL import Image
 
-# Debug: show what URL is being used
 try:
     API_BASE = st.secrets["API_BASE_URL"]
 except:
@@ -47,10 +46,6 @@ def render_medicine_card(med, index):
 # ── Header ──────────────────────────────────────────────────────────────────
 st.title("💊 Prescription Reader")
 st.caption("Upload a doctor's prescription — get a clean, structured medicine list instantly.")
-
-# DEBUG — remove after fixing
-st.info(f"🔗 Connected to: `{API_BASE}`")
-
 st.divider()
 
 # ── Layout ──────────────────────────────────────────────────────────────────
@@ -78,7 +73,7 @@ with col_result:
     st.subheader("🧾 Extracted Information")
 
     if extract_btn and uploaded_file:
-        with st.spinner("Running OCR and AI analysis..."):
+        with st.spinner("Analysing prescription..."):
             try:
                 uploaded_file.seek(0)
                 files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
@@ -88,14 +83,11 @@ with col_result:
                     timeout=120
                 )
 
-                st.write(f"Status code: {response.status_code}")
-                st.write(f"Raw response: {response.text[:500]}")
-
                 if response.status_code == 200:
                     try:
                         data = response.json()
                     except Exception:
-                        st.error("Server returned empty/invalid response.")
+                        st.error("Server returned an invalid response. Please try again.")
                         st.stop()
 
                     medicines = data.get("medicines", [])
@@ -105,9 +97,6 @@ with col_result:
                         st.success(f"✅ Found **{len(medicines)}** medicine(s)")
                         for i, med in enumerate(medicines):
                             render_medicine_card(med, i)
-
-                        with st.expander("🔠 View raw OCR text"):
-                            st.code(raw_text, language=None)
 
                         st.warning("⚠️ **Medical Disclaimer:** This output is AI-generated and may contain errors. Always verify with your doctor or pharmacist before taking any medication.")
                     else:
@@ -120,10 +109,10 @@ with col_result:
                         detail = response.text or "Empty response"
                     st.error(f"API Error {response.status_code}: {detail}")
 
-            except requests.exceptions.ConnectionError as e:
-                st.error(f"❌ Connection error: {str(e)}")
+            except requests.exceptions.ConnectionError:
+                st.error("❌ Cannot connect to backend. Please try again in a moment.")
             except requests.exceptions.Timeout:
-                st.error("⏳ Timed out. Try again.")
+                st.error("⏳ Request timed out. Please try again.")
             except Exception as e:
                 st.error(f"Unexpected error: {str(e)}")
 
@@ -131,4 +120,4 @@ with col_result:
         st.info("⬅️ Upload a prescription image to get started.")
 
 st.divider()
-st.caption("Built with FastAPI · Tesseract · Groq Llama 3.3 · Streamlit")
+st.caption("Built with FastAPI · Groq Llama 4 Vision · Streamlit")
