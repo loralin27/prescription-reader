@@ -1,9 +1,18 @@
 import os
+import shutil
 import pytesseract
 from PIL import Image
 
-# Set Tesseract path for Linux (Render)
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+# Auto-detect tesseract path
+tesseract_path = shutil.which("tesseract")
+if tesseract_path:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+else:
+    # Try common paths
+    for path in ["/usr/bin/tesseract", "/usr/local/bin/tesseract", "/opt/homebrew/bin/tesseract"]:
+        if os.path.exists(path):
+            pytesseract.pytesseract.tesseract_cmd = path
+            break
 
 def extract_text_from_image(image_path: str) -> str:
     ext = os.path.splitext(image_path)[-1].lower()
