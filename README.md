@@ -8,9 +8,9 @@ An AI-powered web app that reads doctor's prescription images and extracts struc
 
 | Service | URL |
 |---|---|
-| Frontend | https://your-app.streamlit.app |
-| Backend API | https://your-app.onrender.com |
-| API Docs | https://your-app.onrender.com/docs |
+| Frontend |[ [https://your-app.streamlit.app](https://prescription-reader-f2.streamlit.app/)](https://prescription-reader-f2.streamlit.app/) |
+| Backend API | https://prescription-reader-x714.onrender.com/ |
+| API Docs | https://prescription-reader-x714.onrender.com/docs |
 
 ---
 
