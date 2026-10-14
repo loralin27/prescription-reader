@@ -58,7 +58,7 @@ def _extract_from_image(raw_text: str) -> list:
         mime_type = mime_map.get(ext, "image/jpeg")
 
         response = client.chat.completions.create(
-            model="meta-llama/llama-4-maverick-17b-128e-instruct",
+            model="qwen/qwen3.8-27b",
             messages=[
                 {
                     "role": "user",
@@ -96,7 +96,7 @@ def _extract_from_text(raw_text: str) -> list:
     """Fallback: use text-based extraction."""
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": f"Extract medicines:\n\n{raw_text}"}
